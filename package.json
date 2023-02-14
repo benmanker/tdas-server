@@ -1,21 +1,13 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "sevrer.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "start": "nodemon server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@gitlab.com/tdas5683407/server.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/tdas5683407/server/issues"
-  },
-  "homepage": "https://gitlab.com/tdas5683407/server#readme",
+  "repository": "git@gitlab.com:tdas5683407/server.git",
+  "author": "Ben Manker <benmanker@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "nodemon": "^2.0.20"
   }
