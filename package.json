@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://gitlab.com/tdas5683407/server/issues"
   },
-  "homepage": "https://gitlab.com/tdas5683407/server#readme"
+  "homepage": "https://gitlab.com/tdas5683407/server#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
 }
