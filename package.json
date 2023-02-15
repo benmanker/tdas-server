@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "sevrer.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon src/server.js"
   },
   "repository": "git@gitlab.com:tdas5683407/server.git",
   "author": "Ben Manker <benmanker@gmail.com>",
