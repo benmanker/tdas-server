@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "main": "sevrer.js",
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon server.js"
   },
   "repository": "git@gitlab.com:tdas5683407/server.git",
   "author": "Ben Manker <benmanker@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "nodemon": "^2.0.20"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.0.1"
   }
 }
