@@ -1,11 +1,8 @@
 # TDAS Server
 
 ## Requirements
-    - Node.js https://nodejs.org/en/download/
-    - Yarn https://classic.yarnpkg.com/lang/en/docs/install/
-
-> **Note:** -Node.js must be installed https://nodejs.org/en/download/
--Yarn must be installed https://classic.yarnpkg.com/lang/en/docs/install/
+- Node.js https://nodejs.org/en/download/
+- Yarn https://classic.yarnpkg.com/lang/en/docs/install/
 
 ## Getting Started
 
