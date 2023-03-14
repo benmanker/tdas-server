@@ -2,10 +2,10 @@
 
 **Note:** Node.js must be installed https://nodejs.org/en/download/
 
-## Running the app for the first time or when dependencies change
+## Run the app for the first time **or** when dependencies change
 
 ```yarn install```
 
-## Running the app
+## Run the app
 
 ```yarn start```
