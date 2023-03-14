@@ -18,7 +18,7 @@ app.get(BASE_URL, (res) => {
 app.use(BASE_URL + "/data", require("./routes/data"));
 
 // connect to database and start express server
-connectDatabase();
+connectDatabase(); // apply database config
 mongoose.connection.once("connected", () => {
   console.log("[INFO] Database connection successful");
   app.listen(PORT, () =>
