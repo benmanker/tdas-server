@@ -6,10 +6,10 @@
 
 ## Getting Started
 
-### Run the app for the first time **or** when dependencies change
+### Update/install dependencies
 
 ```yarn install```
 
-### Run the app
+### Start the app
 
 ```yarn start```
