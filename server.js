@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const mongoose = require("mongoose");
 const connectDatabase = require("./config/databaseConnection");
@@ -9,8 +10,10 @@ const PORT = 3001;
 // built-in middleware for json
 app.use(express.json());
 
+app.use(cors());
+
 // endpoint for testing (http://localhost:3001/api/ in browser)
-app.get(BASE_URL, (res) => {
+app.get(BASE_URL, (req, res) => {
   res.send("Hello World!");
 });
 
