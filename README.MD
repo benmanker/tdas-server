@@ -1,6 +1,6 @@
 # TDAS Server
 
-> **Note:** Node.js must be installed https://nodejs.org/en/download/
+> **Note:** Node.js must be installed https://nodejs.org/en/download/\
 > **Note:** Yarn must be installed https://classic.yarnpkg.com/lang/en/docs/install/
 
 ## Getting Started
