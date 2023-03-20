@@ -7,6 +7,23 @@ const handleGetTests = async (req, res) => {
     const daqData = testData[0].daq.data;
     // console.log(daqData[0]);
 
+    // data compression
+    for (let i = daqData.length; i; i--) {
+      i % 2 === 0 && daqData.splice(i, 1);
+    }
+    for (let i = daqData.length; i; i--) {
+      i % 2 === 0 && daqData.splice(i, 1);
+    }
+    for (let i = daqData.length; i; i--) {
+      i % 2 === 0 && daqData.splice(i, 1);
+    }
+    for (let i = daqData.length; i; i--) {
+      i % 2 === 0 && daqData.splice(i, 1);
+    }
+    for (let i = daqData.length; i; i--) {
+      i % 2 === 0 && daqData.splice(i, 1);
+    }
+
     const arr = [];
     for (let i = 0; i < daqData.length; i++) {
       for (let k = 0; k < daqData[i].length - 4; k++) {
