@@ -59,6 +59,14 @@ const handleGetTests = async (req, res) => {
     testData[0].daq.data = arr;
     testData[0].daq.headers = newHeaders;
     res.send(testData[0]);
+    // console.log(testData[0]);
+
+    // TIME AVERAGE TABLE:
+    const headerNames = testData[0].daq.headers;
+    const data = testData[0].daq.data;
+    // console.log(data);
+
+    //
   } catch (e) {
     res.sendStatus(400);
     console.log(e);
