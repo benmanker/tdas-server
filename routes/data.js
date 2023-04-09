@@ -1,9 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const uploadController = require("../controllers/uploadController");
-const getTestsController = require("../controllers/getTestsController");
+const testController = require("../controllers/testController");
+const fileController = require("../controllers/fileController");
 
-router.get("/", getTestsController.handleGetTests);
-router.post("/upload", uploadController.handleUpload);
+router.get("/", testController.handleGetTest);
+router.get("/testlist", testController.handleGetList);
+router.post(
+  "/upload",
+  (req, res, next) => {
+    fileController.upload.single("file")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ error: "Error uploading file" });
+      }
+      next();
+    });
+  },
+  fileController.handleFileUpload
+);
 
 module.exports = router;
