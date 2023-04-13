@@ -13,10 +13,11 @@ const handleGetList = async (req, res) => {
 
 const handleGetTest = async (req, res) => {
   try {
-    const SCALE = 10;
+    const SCALE = 1;
 
     const testId = req.query.testId;
     const testInfo = await TestInfo.findById(testId, { headers: 1 });
+    // get all documents that belong to the current test
     const testData = await TestData.find(
       { ["metadata.testId"]: testId },
       { scan: 1, timestamp: 1 }
