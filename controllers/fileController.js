@@ -104,9 +104,11 @@ const handleFileUpload = async (req, res) => {
 
     // insert the TestData documents
     TestData.insertMany(documents);
-    res.sendStatus(200);
+
+    res.json({ testId: testInfoRes._id });
   } catch (e) {
     console.log(e);
+    res.json({ testId: undefined });
     res.sendStatus(500);
   }
 };

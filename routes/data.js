@@ -17,5 +17,6 @@ router.post(
   },
   fileController.handleFileUpload
 );
+router.post("/remove", testController.handleRemoveTestById);
 
 module.exports = router;

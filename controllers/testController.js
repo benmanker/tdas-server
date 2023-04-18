@@ -16,7 +16,8 @@ const handleGetTest = async (req, res) => {
     const SCALE = 1;
 
     const testId = req.query.testId;
-    const testInfo = await TestInfo.findById(testId, { headers: 1 });
+    const testInfo = await TestInfo.findById(testId);
+    // console.log(testInfo);
     // get all documents that belong to the current test
     const testData = await TestData.find(
       { ["metadata.testId"]: testId },
@@ -154,6 +155,11 @@ const handleGetTest = async (req, res) => {
     }
 
     res.json({
+      testId: testInfo._id,
+      info: {
+        setup: testInfo.setup,
+        details: testInfo.details,
+      },
       graph: {
         powers: scaledPowers,
         sensorData: scaledSensors,
@@ -163,8 +169,48 @@ const handleGetTest = async (req, res) => {
       timeAveragedTable,
     });
   } catch (e) {
+    res.json({ error: "Bad Request" });
     console.log(e);
   }
 };
 
-module.exports = { handleGetList, handleGetTest };
+const handleRemoveTestById = async (req, res) => {
+  // tests are stored in two different collections... "TestInfo" and "TestData"
+  // we need to delete the data from both locations
+
+  try {
+    // get testId from request
+    const testId = req?.body?.params?.testId;
+    if (!testId) throw "MissingTestId";
+
+    // remove many documents from TestData collection where "metadata.testId" equals "testId"
+    // https://mongoosejs.com/docs/api/model.html#Model.deleteMany()
+    const removeDataResponse = await TestData.deleteMany({
+      "metadata.testId": testId,
+    });
+    if (removeDataResponse?.deletedCount == 0) throw "RemoveTestDataFailed";
+
+    // remove one document from TestInfo collection where "_id" equals "testId"
+    // https://mongoosejs.com/docs/api/model.html#Model.findByIdAndDelete()
+    const removeInfoResponse = await TestInfo.findByIdAndDelete(testId);
+    if (!removeInfoResponse) throw "RemoveTestInfoFailed";
+
+    res.sendStatus(200);
+  } catch (e) {
+    if (e === "MissingTestId") {
+      console.log(e);
+      res.sendStatus(400); // bad request
+    } else if (e === "RemoveTestDataFailed") {
+      console.log(e);
+      res.sendStatus(400); // bad request
+    } else if (e === "RemoveTestInfoFailed") {
+      console.log(e);
+      res.sendStatus(400); // bad request
+    } else {
+      console.log(e);
+      res.sendStatus(400); // bad request
+    }
+  }
+};
+
+module.exports = { handleGetList, handleGetTest, handleRemoveTestById };
