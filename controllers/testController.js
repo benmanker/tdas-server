@@ -154,6 +154,11 @@ const handleGetTest = async (req, res) => {
       });
     }
 
+    // Solve Issue #7 Remove Units from Headers
+    testInfo.headers.forEach(function (item, index, array) {
+      array[index] = item.replace(" (°C)", "");
+    });
+
     res.json({
       testId: testInfo._id,
       info: {
