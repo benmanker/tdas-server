@@ -13,7 +13,7 @@ const handleGetList = async (req, res) => {
 
 const handleGetTest = async (req, res) => {
   try {
-    const SCALE = 1;
+    const SCALE = 2;
 
     const testId = req.query.testId;
     const testInfo = await TestInfo.findById(testId);

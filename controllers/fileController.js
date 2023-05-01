@@ -14,6 +14,14 @@ const handleFileUpload = async (req, res) => {
 
     // read excel file sent from the client
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    if (workbook.SheetNames.length !== 4) {
+      // return res.status(400).json({
+      //   error: "invalid file: The Excel file must have exactly 4 sheets.",
+      // });
+      return res.status(400).send({
+        error: "invalid file: The Excel file must have exactly 4 sheets.",
+      });
+    }
     const sheetsData = workbook.SheetNames.reduce((sheets, sheetName) => {
       const sheet = workbook.Sheets[sheetName];
       const sheetAsArray = XLSX.utils.sheet_to_json(sheet, { header: 1 });
