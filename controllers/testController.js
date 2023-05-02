@@ -159,6 +159,140 @@ const handleGetTest = async (req, res) => {
       array[index] = item.replace(" (°C)", "");
     });
 
+    // Calculated Columns
+    // what do we need to know?
+    // 1. Which columns is each calcuation being done on
+    // so we need to have an array, each element in the array is a list of colum names
+    // 2. for each element in the array, we need to know the operation that is being done.
+    // after that we can do the operation on the correspoding array element
+    // once thats done, what do we need to return?
+    // we need to return a 2d array, each element in the array will be a calcuated column for each power step
+    // we also need to return some sort of list containing the headers for the table. We need to display what sensor names were used in each column as well as the operation that was performed
+
+    // what operations can we do? and what operations can support exactly two columns, more than two columns, or no columns at all?
+
+    // Power: Already done and is the first column in the table
+    // Average Temperature: At least two - all columns. Take the average of the selected columns for each power step
+    // Max Temperature: At least two - all columns. Find the max value for the selected columns for each power step
+    // Min Temperature: Same as max
+    // Temperature Difference: Exactly two columns. Take the two columns and find the difference for each power step
+
+    // lets make an example
+
+    // what do we need?
+    // list of all sensors: testInfo.headers
+    // sensor averages for each power step: time averaged table
+    // a list of each calcuation that needs to be done
+
+    // replace this with a query
+    const calculations = [
+      { operation: "max", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+      { operation: "min", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+      { operation: "avg", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+      { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
+      { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
+    ];
+
+    const table = []; // a list of calculated columns
+
+    // example:
+    // first one is going to be the max of the three columns for each power step
+
+    // for each calculation in calculations:
+    const allIndexes = [];
+    calculations.forEach((calculation) => {
+      // get indexes of columns
+      const indexes = [];
+
+      for (let i = 0; i < calculation.columns.length; i++) {
+        for (let k = 0; k < testInfo.headers.length; k++) {
+          if (calculation.columns[i] === testInfo.headers[k]) {
+            indexes.push(k);
+          }
+        }
+      }
+      allIndexes.push(indexes);
+
+      // now that we have the indexes of the user selected columns, we can perform the operation the used selected
+
+      // need to return an array, each element is the calculated value for the current power step
+      if (calculation.operation === "max") {
+        var maxes = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          maxes.push(Math.max(...currentSensorValues));
+        }
+        table.push(maxes);
+      }
+
+      if (calculation.operation === "min") {
+        var mins = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          mins.push(Math.min(...currentSensorValues));
+        }
+        table.push(mins);
+      }
+
+      if (calculation.operation === "avg") {
+        var avgs = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          const sum = currentSensorValues.reduce(
+            (accumulator, currentValue) => accumulator + currentValue,
+            0
+          );
+          const average = sum / currentSensorValues.length;
+
+          avgs.push(parseFloat(average.toFixed(3)));
+        }
+        table.push(avgs);
+      }
+
+      if (calculation.operation === "dif") {
+        var difs = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          const dif = currentSensorValues[1] - currentSensorValues[0];
+
+          difs.push(parseFloat(dif.toFixed(3)));
+        }
+        table.push(difs);
+      }
+    });
+
     res.json({
       testId: testInfo._id,
       info: {
@@ -172,6 +306,7 @@ const handleGetTest = async (req, res) => {
         timestamps: scaledTimestamps,
       },
       timeAveragedTable,
+      calculatedColumnsTable: { table, calculations },
     });
   } catch (e) {
     res.json({ error: "Bad Request" });
