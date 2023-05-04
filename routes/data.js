@@ -3,6 +3,8 @@ const router = express.Router();
 const testController = require("../controllers/testController");
 const fileController = require("../controllers/fileController");
 
+router.get("/calc", testController.handleGetCalculations);
+router.post("/calc", testController.handleSaveCalculations);
 router.get("/", testController.handleGetTest);
 router.get("/testlist", testController.handleGetList);
 router.post(

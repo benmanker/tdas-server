@@ -1,5 +1,40 @@
 const TestInfo = require("../models/TestInfo");
 const TestData = require("../models/TestData");
+const TestCalc = require("../models/TestCalc");
+
+// const handleSaveCalculations = async (req, res) => {
+//   try {
+//     const calculations = await TestCalc.find
+//   }
+// }
+
+const handleGetCalculations = async (req, res) => {
+  try {
+    var calculations = await TestCalc.findOne({ testId: req.query.testId });
+    if (!calculations) {
+      var newCalc = new TestCalc({ testId: req.query.testId });
+      const newCalcRes = newCalc.save();
+      calculations = await TestCalc.findOne({ testId: req.query.testId });
+    }
+    console.log(calculations);
+    res.json(calculations);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const handleSaveCalculations = async (req, res) => {
+  console.log(req.body.calculations);
+  try {
+    var testCalc = await TestCalc.findOne({ testId: req.body.testId });
+    testCalc.calculations = req.body.calculations;
+    const testCalcRes = testCalc.save();
+    // console.log(calculations);
+    res.sendStatus(200);
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 const handleGetList = async (req, res) => {
   try {
@@ -13,7 +48,7 @@ const handleGetList = async (req, res) => {
 
 const handleGetTest = async (req, res) => {
   try {
-    const SCALE = 2;
+    const SCALE = 50;
 
     const testId = req.query.testId;
     const testInfo = await TestInfo.findById(testId);
@@ -159,6 +194,121 @@ const handleGetTest = async (req, res) => {
       array[index] = item.replace(" (°C)", "");
     });
 
+    var calculations = await TestCalc.findOne({ testId: req.query.testId });
+    if (!calculations) {
+      var newCalc = new TestCalc({ testId: req.query.testId });
+      const newCalcRes = newCalc.save();
+      calculations = await TestCalc.findOne({ testId: req.query.testId });
+    }
+    console.log(calculations.calculations);
+    // replace this with a query
+    // const calculations = [
+    //   { operation: "max", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "min", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "avg", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
+    // ];
+
+    const table = []; // a list of calculated columns
+
+    // example:
+    // first one is going to be the max of the three columns for each power step
+
+    // for each calculation in calculations:
+    const allIndexes = [];
+    calculations.calculations.forEach((calculation) => {
+      // get indexes of columns
+      const indexes = [];
+
+      for (let i = 0; i < calculation.columns.length; i++) {
+        for (let k = 0; k < testInfo.headers.length; k++) {
+          if (calculation.columns[i] === testInfo.headers[k]) {
+            indexes.push(k);
+          }
+        }
+      }
+      allIndexes.push(indexes);
+
+      // now that we have the indexes of the user selected columns, we can perform the operation the used selected
+
+      // need to return an array, each element is the calculated value for the current power step
+      if (calculation.operator === "max") {
+        var maxes = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          maxes.push(Math.max(...currentSensorValues));
+        }
+        table.push(maxes);
+      }
+
+      if (calculation.operator === "min") {
+        var mins = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          mins.push(Math.min(...currentSensorValues));
+        }
+        table.push(mins);
+      }
+
+      if (calculation.operator === "avg") {
+        var avgs = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          const sum = currentSensorValues.reduce(
+            (accumulator, currentValue) => accumulator + currentValue,
+            0
+          );
+          const average = sum / currentSensorValues.length;
+
+          avgs.push(parseFloat(average.toFixed(3)));
+        }
+        table.push(avgs);
+      }
+
+      if (calculation.operator === "dif") {
+        var difs = [];
+        for (let i = 0; i < timeAveragedTable.length; i++) {
+          // FOR EACH POWER STEP:
+          // get list of values from the sensor averages
+          const currentSensorValues = [];
+          for (let k = 0; k < indexes.length; k++) {
+            currentSensorValues.push(
+              timeAveragedTable[i].sensorAverages[indexes[k]]
+            );
+          }
+          // do the operation on the list of values
+          const dif = currentSensorValues[1] - currentSensorValues[0];
+
+          difs.push(parseFloat(dif.toFixed(3)));
+        }
+        table.push(difs);
+      }
+    });
+
     res.json({
       testId: testInfo._id,
       info: {
@@ -172,6 +322,7 @@ const handleGetTest = async (req, res) => {
         timestamps: scaledTimestamps,
       },
       timeAveragedTable,
+      calculatedColumnsTable: { table, calculations },
     });
   } catch (e) {
     res.json({ error: "Bad Request" });
@@ -218,4 +369,10 @@ const handleRemoveTestById = async (req, res) => {
   }
 };
 
-module.exports = { handleGetList, handleGetTest, handleRemoveTestById };
+module.exports = {
+  handleGetList,
+  handleGetTest,
+  handleRemoveTestById,
+  handleGetCalculations,
+  handleSaveCalculations,
+};
