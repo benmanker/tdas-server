@@ -1,5 +1,40 @@
 const TestInfo = require("../models/TestInfo");
 const TestData = require("../models/TestData");
+const TestCalc = require("../models/TestCalc");
+
+// const handleSaveCalculations = async (req, res) => {
+//   try {
+//     const calculations = await TestCalc.find
+//   }
+// }
+
+const handleGetCalculations = async (req, res) => {
+  try {
+    var calculations = await TestCalc.findOne({ testId: req.query.testId });
+    if (!calculations) {
+      var newCalc = new TestCalc({ testId: req.query.testId });
+      const newCalcRes = newCalc.save();
+      calculations = await TestCalc.findOne({ testId: req.query.testId });
+    }
+    console.log(calculations);
+    res.json(calculations);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const handleSaveCalculations = async (req, res) => {
+  console.log(req.body.calculations);
+  try {
+    var testCalc = await TestCalc.findOne({ testId: req.body.testId });
+    testCalc.calculations = req.body.calculations;
+    const testCalcRes = testCalc.save();
+    // console.log(calculations);
+    res.sendStatus(200);
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 const handleGetList = async (req, res) => {
   try {
@@ -13,7 +48,7 @@ const handleGetList = async (req, res) => {
 
 const handleGetTest = async (req, res) => {
   try {
-    const SCALE = 2;
+    const SCALE = 50;
 
     const testId = req.query.testId;
     const testInfo = await TestInfo.findById(testId);
@@ -159,39 +194,20 @@ const handleGetTest = async (req, res) => {
       array[index] = item.replace(" (°C)", "");
     });
 
-    // Calculated Columns
-    // what do we need to know?
-    // 1. Which columns is each calcuation being done on
-    // so we need to have an array, each element in the array is a list of colum names
-    // 2. for each element in the array, we need to know the operation that is being done.
-    // after that we can do the operation on the correspoding array element
-    // once thats done, what do we need to return?
-    // we need to return a 2d array, each element in the array will be a calcuated column for each power step
-    // we also need to return some sort of list containing the headers for the table. We need to display what sensor names were used in each column as well as the operation that was performed
-
-    // what operations can we do? and what operations can support exactly two columns, more than two columns, or no columns at all?
-
-    // Power: Already done and is the first column in the table
-    // Average Temperature: At least two - all columns. Take the average of the selected columns for each power step
-    // Max Temperature: At least two - all columns. Find the max value for the selected columns for each power step
-    // Min Temperature: Same as max
-    // Temperature Difference: Exactly two columns. Take the two columns and find the difference for each power step
-
-    // lets make an example
-
-    // what do we need?
-    // list of all sensors: testInfo.headers
-    // sensor averages for each power step: time averaged table
-    // a list of each calcuation that needs to be done
-
+    var calculations = await TestCalc.findOne({ testId: req.query.testId });
+    if (!calculations) {
+      var newCalc = new TestCalc({ testId: req.query.testId });
+      const newCalcRes = newCalc.save();
+      calculations = await TestCalc.findOne({ testId: req.query.testId });
+    }
+    console.log(calculations.calculations);
     // replace this with a query
-    const calculations = [
-      { operation: "max", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
-      { operation: "min", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
-      { operation: "avg", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
-      { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
-      { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
-    ];
+    // const calculations = [
+    //   { operation: "max", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "min", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "avg", columns: ["T_H1_1/101", "T_H1_2/102", "T_H2_2/103"] },
+    //   { operation: "dif", columns: ["T_H1_1/101", "T_H1_2/102"] },
+    // ];
 
     const table = []; // a list of calculated columns
 
@@ -200,7 +216,7 @@ const handleGetTest = async (req, res) => {
 
     // for each calculation in calculations:
     const allIndexes = [];
-    calculations.forEach((calculation) => {
+    calculations.calculations.forEach((calculation) => {
       // get indexes of columns
       const indexes = [];
 
@@ -216,7 +232,7 @@ const handleGetTest = async (req, res) => {
       // now that we have the indexes of the user selected columns, we can perform the operation the used selected
 
       // need to return an array, each element is the calculated value for the current power step
-      if (calculation.operation === "max") {
+      if (calculation.operator === "max") {
         var maxes = [];
         for (let i = 0; i < timeAveragedTable.length; i++) {
           // FOR EACH POWER STEP:
@@ -233,7 +249,7 @@ const handleGetTest = async (req, res) => {
         table.push(maxes);
       }
 
-      if (calculation.operation === "min") {
+      if (calculation.operator === "min") {
         var mins = [];
         for (let i = 0; i < timeAveragedTable.length; i++) {
           // FOR EACH POWER STEP:
@@ -250,7 +266,7 @@ const handleGetTest = async (req, res) => {
         table.push(mins);
       }
 
-      if (calculation.operation === "avg") {
+      if (calculation.operator === "avg") {
         var avgs = [];
         for (let i = 0; i < timeAveragedTable.length; i++) {
           // FOR EACH POWER STEP:
@@ -273,7 +289,7 @@ const handleGetTest = async (req, res) => {
         table.push(avgs);
       }
 
-      if (calculation.operation === "dif") {
+      if (calculation.operator === "dif") {
         var difs = [];
         for (let i = 0; i < timeAveragedTable.length; i++) {
           // FOR EACH POWER STEP:
@@ -353,4 +369,10 @@ const handleRemoveTestById = async (req, res) => {
   }
 };
 
-module.exports = { handleGetList, handleGetTest, handleRemoveTestById };
+module.exports = {
+  handleGetList,
+  handleGetTest,
+  handleRemoveTestById,
+  handleGetCalculations,
+  handleSaveCalculations,
+};
